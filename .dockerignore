@@ -1,0 +1,17 @@
+.env
+.env.local
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+chroma_db/
+playwright-report/
+.DS_Store
+.git/
+.gitignore
+logs/
+*.log
