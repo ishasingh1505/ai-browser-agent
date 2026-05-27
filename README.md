@@ -1,10 +1,15 @@
-AI Browser Research Agent
+# AI Browser Research Agent
+
 An autonomous multi-agent system that takes a natural-language research query, searches the web, visits product pages, extracts structured data using an LLM, and returns a ranked comparison report — all without any manual browsing.
 
-Example query: "best lightweight laptop under ₹90,000 for machine learning"
-Output: Structured specs table (CPU, GPU, RAM, price, weight) + AI-written comparison summary with a recommendation.
+**Example query:** *"best lightweight laptop under ₹90,000 for machine learning"*
+**Output:** Structured specs table (CPU, GPU, RAM, price, weight) + AI-written comparison summary with a recommendation.
 
-Architecture
+---
+
+## Architecture
+
+```
 User Query
     │
     ▼
@@ -53,18 +58,29 @@ User Query
                     ▼
             Structured JSON Response
           (products + summary + steps)
-Tech Stack
-Layer	Technology
-API Framework	FastAPI + uvicorn
-Agent Orchestration	LangGraph (StateGraph)
-LLM	Groq API — Llama 3.3 70B Versatile
-Web Search	duckduckgo-search (DDGS) + Brave/Startpage HTML fallback
-Browser Automation	Playwright (Chromium, headless)
-HTML Parsing	BeautifulSoup4 + lxml
-Data Validation	Pydantic v2
-Frontend	Vanilla JS + Tailwind CSS (single HTML file)
-Deployment	Docker + Railway
-Project Structure
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| API Framework | FastAPI + uvicorn |
+| Agent Orchestration | LangGraph (StateGraph) |
+| LLM | Groq API — Llama 3.3 70B Versatile |
+| Web Search | duckduckgo-search (DDGS) + Brave/Startpage HTML fallback |
+| Browser Automation | Playwright (Chromium, headless) |
+| HTML Parsing | BeautifulSoup4 + lxml |
+| Data Validation | Pydantic v2 |
+| Frontend | Vanilla JS + Tailwind CSS (single HTML file) |
+| Deployment | Docker + Railway |
+
+---
+
+## Project Structure
+
+```
 ai-browser-agent/
 ├── app/
 │   ├── main.py              # FastAPI routes
@@ -85,41 +101,69 @@ ai-browser-agent/
 ├── railway.toml
 ├── requirements.txt
 └── .env                     # API keys (not committed)
-Setup
-1. Clone & install dependencies
+```
+
+---
+
+## Setup
+
+### 1. Clone & install dependencies
+
+```bash
 git clone https://github.com/YOUR_USERNAME/ai-browser-agent
 cd ai-browser-agent
 pip install -r requirements.txt
 playwright install chromium
-2. Set up environment variables
-Create a .env file in the project root:
+```
 
+### 2. Set up environment variables
+
+Create a `.env` file in the project root:
+
+```env
 GROQ_API_KEY=your_groq_api_key_here
 GROQ_MODEL=llama-3.3-70b-versatile
 APP_ENV=development
 LOG_LEVEL=INFO
 BROWSER_HEADLESS=true
 BROWSER_TIMEOUT_MS=30000
-Get a free Groq API key at console.groq.com.
+```
 
-3. Run the server
+Get a free Groq API key at [console.groq.com](https://console.groq.com).
+
+### 3. Run the server
+
+```bash
 uvicorn app.main:app --reload
-Open http://localhost:8000 in your browser — the frontend loads automatically.
+```
 
-API Endpoints
-Method	Path	Description
-GET	/	Frontend UI
-GET	/health	Health check
-GET	/status	Version + deployment info
-POST	/research	Web search with optional page visits
-POST	/extract	Structured HTML extraction from a URL
-POST	/analyze	LLM extraction from a URL
-POST	/research/full	Full multi-agent research pipeline
-Example request
+Open `http://localhost:8000` in your browser — the frontend loads automatically.
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Frontend UI |
+| `GET` | `/health` | Health check |
+| `GET` | `/status` | Version + phase info |
+| `POST` | `/research` | Phase 1: web search only |
+| `POST` | `/extract` | Phase 2: structured HTML extraction |
+| `POST` | `/analyze` | Phase 3: LLM extraction from a URL |
+| `POST` | `/research/full` | Phase 4: full multi-agent pipeline |
+
+### Example request
+
+```bash
 curl -X POST http://localhost:8000/research/full \
   -H "Content-Type: application/json" \
   -d '{"query": "best lightweight laptop under 90000 for ML", "max_results": 3}'
-Example response
+```
+
+### Example response
+
+```json
 {
   "query": "best lightweight laptop under 90000 for ML",
   "products": [
@@ -144,51 +188,69 @@ Example response
     "summarizer: generated comparison report"
   ]
 }
-Deploy to Railway
-The project is Dockerized and deployed with Railway. Local Docker preflight:
+```
 
+---
+
+## Deploy to Railway
+
+Deployment preflight has been verified locally with Docker:
+
+```bash
 docker build -t ai-browser-agent:deploy-check .
 docker run --rm -p 8001:8000 ai-browser-agent:deploy-check
 curl http://localhost:8001/health
-The Docker image excludes .env, .venv, logs, caches, and local database files via .dockerignore. The frontend uses the current origin for API calls, so it works on localhost and deployed URLs.
+```
 
-Push the project to GitHub (.env is gitignored — never committed)
-Go to railway.app → New Project → Deploy from GitHub
-Select your repo
-Add environment variables in the Railway dashboard (same as .env)
-Railway auto-detects the Dockerfile and builds + deploys
-Your agent will be live at a public URL like https://ai-browser-agent-production.up.railway.app.
+The Docker image excludes `.env`, `.venv`, logs, caches, and local database files via `.dockerignore`. The frontend uses the current origin for API calls, so it works on localhost and deployed URLs.
 
-How It Works — Deep Dive
-Why LangGraph?
-LangGraph lets each agent node read from and write to a shared AgentState dict. Nodes are fully decoupled — the browser node doesn't know about the LLM, and the summarizer doesn't know about Playwright. This makes the system easy to extend: add a scoring node, a memory node, or a re-ranking step without touching existing nodes.
+1. Push the project to GitHub (`.env` is gitignored — never committed)
+2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
+3. Select your repo
+4. Add environment variables in the Railway dashboard (same as `.env`)
+5. Railway auto-detects the `Dockerfile` and builds + deploys
 
-Why Groq over OpenAI?
+Your agent will be live at a public URL like `https://ai-browser-agent-production.up.railway.app`.
+
+---
+
+## How It Works — Deep Dive
+
+### Why LangGraph?
+LangGraph lets each agent node read from and write to a shared `AgentState` dict. Nodes are fully decoupled — the browser node doesn't know about the LLM, and the summarizer doesn't know about Playwright. This makes the system easy to extend: add a scoring node, a memory node, or a re-ranking step without touching existing nodes.
+
+### Why Groq over OpenAI?
 Groq's free tier gives access to Llama 3.3 70B — a genuinely capable open-source model — with very fast inference (tokens per second). No credit card required for development.
 
-Why multiple search fallbacks?
-DuckDuckGo is the first search provider because duckduckgo-search avoids browser-based search flows and runs in a thread pool to avoid blocking the async event loop. If DDG rate-limits the request, the browser tool falls back to Brave and Startpage HTML result pages, then filters low-signal domains like YouTube, Quora, and social sites.
+### Why multiple search fallbacks?
+DuckDuckGo is the first search provider because `duckduckgo-search` avoids browser-based search flows and runs in a thread pool to avoid blocking the async event loop. If DDG rate-limits the request, the browser tool falls back to Brave and Startpage HTML result pages, then filters low-signal domains like YouTube, Quora, and social sites.
 
-Why concurrent extraction?
-asyncio.gather() runs all page visits and LLM calls in parallel. For 3 results, this cuts wall-clock time from ~45s (sequential) to ~15s (parallel).
+### Why concurrent extraction?
+`asyncio.gather()` runs all page visits and LLM calls in parallel. For 3 results, this cuts wall-clock time from ~45s (sequential) to ~15s (parallel).
 
-Why lightweight ranking?
+### Why lightweight ranking?
 The current ranking step uses a small domain heuristic before summarization. For ML-oriented laptop queries, it prefers dedicated NVIDIA/RTX GPUs, then considers CPU class, RAM, storage, price-vs-budget, and lightweight hints when available. This keeps the architecture simple while still producing better recommendations than raw search order.
 
-Current Status
-FastAPI backend with health, status, search, extraction, analysis, and full research endpoints
-LangGraph pipeline for planning, searching, extracting, analyzing, ranking, and summarizing
-Playwright-powered page visits with BeautifulSoup cleanup
-Groq/Llama-powered structured product extraction and comparison summaries
-Search fallback chain using DuckDuckGo, Brave, and Startpage
-Lightweight ranking heuristic for laptop recommendations
-Single-file Tailwind frontend served by the API
-Dockerized deployment with Railway support
-Future Improvements
-Add citations inside the generated summary, not just source links on product cards
-Track LLM/search calls and estimated cost per research run
-Add optional memory for user preferences such as budget, brands, and use cases
-Improve product deduplication across list pages and review pages
-Add screenshots or a short demo GIF for portfolio presentation
-License
+---
+
+## Roadmap
+
+- [x] Phase 1 — FastAPI + Playwright web search
+- [x] Phase 2 — BeautifulSoup structured extraction
+- [x] Phase 3 — LLM-powered extraction (Groq)
+- [x] Phase 4 — LangGraph multi-agent pipeline
+- [x] Phase 5 — Lightweight scoring + ranking heuristic
+- [ ] Phase 6 — Memory with ChromaDB
+- [x] Phase 7 — Single-file HTML frontend
+- [ ] Phase 8 — Citations + cost tracking
+- [x] Phase 8a — Parallel browsing / concurrent page + LLM calls
+- [x] Phase 9a — Docker + Railway deployment config
+- [x] Phase 9b — Local Docker deployment smoke test
+- [ ] Phase 9c — Verified live Railway deployment
+- [ ] Phase 10 — Resume packaging (architecture GIF, writeup)
+
+---
+
+## License
+
 MIT
