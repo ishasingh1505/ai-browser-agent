@@ -147,11 +147,11 @@ Open `http://localhost:8000` in your browser — the frontend loads automaticall
 |---|---|---|
 | `GET` | `/` | Frontend UI |
 | `GET` | `/health` | Health check |
-| `GET` | `/status` | Version + phase info |
-| `POST` | `/research` | Phase 1: web search only |
-| `POST` | `/extract` | Phase 2: structured HTML extraction |
-| `POST` | `/analyze` | Phase 3: LLM extraction from a URL |
-| `POST` | `/research/full` | Phase 4: full multi-agent pipeline |
+| `GET` | `/status` | Version + deployment info |
+| `POST` | `/research` | Web search with optional page visits |
+| `POST` | `/extract` | Structured HTML extraction from a URL |
+| `POST` | `/analyze` | LLM extraction from a URL |
+| `POST` | `/research/full` | Full multi-agent research pipeline |
 
 ### Example request
 
@@ -194,7 +194,7 @@ curl -X POST http://localhost:8000/research/full \
 
 ## Deploy to Railway
 
-Deployment preflight has been verified locally with Docker:
+The project is Dockerized and deployed with Railway. Local Docker preflight:
 
 ```bash
 docker build -t ai-browser-agent:deploy-check .
@@ -233,21 +233,24 @@ The current ranking step uses a small domain heuristic before summarization. For
 
 ---
 
-## Roadmap
+## Current Status
 
-- [x] Phase 1 — FastAPI + Playwright web search
-- [x] Phase 2 — BeautifulSoup structured extraction
-- [x] Phase 3 — LLM-powered extraction (Groq)
-- [x] Phase 4 — LangGraph multi-agent pipeline
-- [x] Phase 5 — Lightweight scoring + ranking heuristic
-- [ ] Phase 6 — Memory with ChromaDB
-- [x] Phase 7 — Single-file HTML frontend
-- [ ] Phase 8 — Citations + cost tracking
-- [x] Phase 8a — Parallel browsing / concurrent page + LLM calls
-- [x] Phase 9a — Docker + Railway deployment config
-- [x] Phase 9b — Local Docker deployment smoke test
-- [ ] Phase 9c — Verified live Railway deployment
-- [ ] Phase 10 — Resume packaging (architecture GIF, writeup)
+- FastAPI backend with health, status, search, extraction, analysis, and full research endpoints
+- LangGraph pipeline for planning, searching, extracting, analyzing, ranking, and summarizing
+- Playwright-powered page visits with BeautifulSoup cleanup
+- Groq/Llama-powered structured product extraction and comparison summaries
+- Search fallback chain using DuckDuckGo, Brave, and Startpage
+- Lightweight ranking heuristic for laptop recommendations
+- Single-file Tailwind frontend served by the API
+- Dockerized deployment with Railway support
+
+## Future Improvements
+
+- Add citations inside the generated summary, not just source links on product cards
+- Track LLM/search calls and estimated cost per research run
+- Add optional memory for user preferences such as budget, brands, and use cases
+- Improve product deduplication across list pages and review pages
+- Add screenshots or a short demo GIF for portfolio presentation
 
 ---
 
